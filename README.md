@@ -26,7 +26,7 @@ Here's a very simple example:
 
 Which would generate the following events:
 
-```
+```clojure
 :trade {:threshold 10.6, :quantity 100, :type :sell}
 :trade {:threshold 10.5, :quantity 100, :type :sell}
 :trade {:threshold 10.5, :quantity 100, :type :sell}
@@ -34,4 +34,4 @@ Which would generate the following events:
 
 #### Testing
 
-To run the unit tests, clone the project and run `lein test`
+To run the unit tests, clone the project and run: `lein test`
