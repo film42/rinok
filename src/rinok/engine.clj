@@ -9,12 +9,11 @@
    :quantity quantity
    :type type})
 
-(defn trade [buyer seller price quantity type]
+(defn trade [buyer seller price quantity]
   {:buyer buyer
    :seller seller
    :price price
-   :quantity quantity
-   :type type})
+   :quantity quantity})
 
 (defn- sell? [o] (= :sell (:type o)))
 (defn- buy? [o] (= :buy (:type o)))
@@ -41,7 +40,7 @@
                  ;; Take the higher price if a sell order
                  (:threshold top)
                  ;; Take the lower price if a buy order
-                 (:threshold o)) min-quantity (:type o))))
+                 (:threshold o)) min-quantity)))
         (when (pos? remaining-quantity)
           ;; Not tail-rec optimized
           (match (assoc-in o [:quantity] remaining-quantity) sb cbs)))

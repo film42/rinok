@@ -27,9 +27,9 @@ Here's a very simple example:
 Which would generate the following events:
 
 ```clojure
-:trade {:buyer B, :seller C, :price 10.6, :quantity 100, :type :sell}
-:trade {:buyer A, :seller C, :price 10.5, :quantity 100, :type :sell}
-:trade {:buyer A, :seller D, :price 10.5, :quantity 100, :type :sell}
+:trade {:buyer B, :seller C, :price 10.6, :quantity 100}
+:trade {:buyer A, :seller C, :price 10.5, :quantity 100}
+:trade {:buyer A, :seller D, :price 10.5, :quantity 100}
 ```
 
 #### Testing
