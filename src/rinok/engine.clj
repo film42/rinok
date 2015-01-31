@@ -67,5 +67,4 @@
                 (book/accept type-book pending))))))
       
       (register-cb [_ cb]
-        (swap! callbacks conj cb)
-        (map #(% "test" "te") @callbacks)))))
+        (swap! callbacks conj cb)))))
