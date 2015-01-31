@@ -3,13 +3,16 @@
 
 (defn order
   "Example: (order 10.5 100 :sell)"
-  [threshold quantity type]
-  {:threshold threshold
+  [account threshold quantity type]
+  {:account account
+   :threshold threshold
    :quantity quantity
    :type type})
 
-(defn trade [threshold quantity type]
-  {:threshold threshold
+(defn trade [buyer seller price quantity type]
+  {:buyer buyer
+   :seller seller
+   :price price
    :quantity quantity
    :type type})
 
@@ -31,11 +34,14 @@
         (book/decrement sb min-quantity)
         (doseq [cb cbs]
           (cb :trade
-              (trade (if (buy? o)
-                       ;; Take the higher price if a sell order
-                       (:threshold o)
-                       ;; Take the lower price if a buy order
-                       (:threshold top)) min-quantity (:type o))))
+              (trade
+               (if (buy? o) (:account o) (:account top))
+               (if (sell? o) (:account o) (:account top))
+               (if (sell? o)
+                 ;; Take the higher price if a sell order
+                 (:threshold top)
+                 ;; Take the lower price if a buy order
+                 (:threshold o)) min-quantity (:type o))))
         (when (pos? remaining-quantity)
           ;; Not tail-rec optimized
           (match (assoc-in o [:quantity] remaining-quantity) sb cbs)))
