@@ -2,7 +2,7 @@
   (:require [rinok.book :as book]))
 
 (defn limit-order
-  "Example: (order 10.5 100 :sell)"
+  "Example: (order 'A 10.5 100 :sell)"
   [account threshold quantity type]
   {:account account
    :threshold threshold
