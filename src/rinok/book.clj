@@ -1,5 +1,7 @@
 (ns rinok.book)
 
+(def sell-map (sorted-map-by <))
+(def buy-map (sorted-map-by >))
 (defn- sell? [t] (= :sell t))
 
 (defprotocol IOrderBook
@@ -8,15 +10,15 @@
   (top [_] "See the top of the book")
   (decrement [_ quantity] "Decrement the book by"))
 
-(defrecord OrderBook [state type]
+(defrecord OrderBook [state]
   IOrderBook
   (accept [_ o]
-    (let [threshold (:threshold o)
-          ordering (if (sell? type) < >)]
+    (let [threshold (:threshold o)]
       ;; We use ordering to control sort-by on keys. A buy book should be
       ;; sorted from high->low, and a sell book should be low->high.
-      (swap! state #(into (sorted-map-by ordering)
-                          (assoc % threshold (conj (vec (% threshold)) o))))))
+      (swap! state #(assoc % threshold (conj (if (nil? (% threshold))
+                                               []
+                                               (% threshold)) o)))))
   (top [_] (-> @state first last first))
   (decrement [_ quantity]
     (loop [remaining quantity]

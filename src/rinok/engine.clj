@@ -52,8 +52,8 @@
   (register-cb [_ cb] "Register a callback for events"))
 
 (defn ->MatchingEngine []
-  (let [buy-book (book/->OrderBook (atom {}) :buy)
-        sell-book (book/->OrderBook (atom {}) :sell)
+  (let [buy-book (book/->OrderBook (atom book/buy-map))
+        sell-book (book/->OrderBook (atom book/sell-map))
         callbacks (atom [])]
     (reify IMatchingEngine
       (accept [_ o]

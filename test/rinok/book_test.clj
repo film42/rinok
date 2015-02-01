@@ -3,7 +3,7 @@
             [rinok.book :refer :all]))
 
 (defn order-book []
-  (->OrderBook (atom {}) :sell))
+  (->OrderBook (atom sell-map)))
 
 (deftest top-of-the-book
   (testing "will get nil when the book is empty"
