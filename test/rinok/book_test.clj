@@ -44,10 +44,10 @@
       (accept book {:quantity 100 :threshold 10.1})
       (accept book {:quantity 200 :threshold 10.1})
       (decrement book 160)
-      (is (= {:quantity 140 :threshold 10.1}))))
+      (is (= {:quantity 140 :threshold 10.1} (top book)))))
 
   (testing "decrement partially from top"
     (let [book (order-book)]
       (accept book {:quantity 100 :threshold 10.1})
       (decrement book 60)
-      (is (= {:quantity 40 :threshold 10.1 })))))
+      (is (= {:quantity 40 :threshold 10.1} (top book))))))
