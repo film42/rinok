@@ -32,15 +32,9 @@
       (do
         (book/decrement sb min-quantity)
         (doseq [cb cbs]
-          (cb :trade
-              (trade
-               (if (buy? o) (:account o) (:account top))
-               (if (sell? o) (:account o) (:account top))
-               (if (sell? o)
-                 ;; Take the higher price if a sell order
-                 (:threshold top)
-                 ;; Take the lower price if a buy order
-                 (:threshold o)) min-quantity)))
+          (if (sell? o)
+            (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
+            (cb :trade (trade (:account o) (:account top) (:threshold o) min-quantity))))
         (when (pos? remaining-quantity)
           ;; Not tail-rec optimized
           (match (assoc-in o [:quantity] remaining-quantity) sb cbs)))
@@ -49,7 +43,7 @@
 
 (defprotocol IMatchingEngine
   (accept [_ o] "Accept an order to the engine")
-  (register-cb [_ cb] "Register a callback for events"))
+  (subscribe [_ cb] "Register a callback for events"))
 
 (defn ->MatchingEngine []
   (let [buy-book (book/->OrderBook (atom book/buy-map))
@@ -66,5 +60,5 @@
               (when-not (nil? pending)
                 (book/accept type-book pending))))))
       
-      (register-cb [_ cb]
+      (subscribe [_ cb]
         (swap! callbacks conj cb)))))
