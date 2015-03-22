@@ -21,25 +21,26 @@
 (defn- match
   "Attempt to match an order against book"
   [o sb cbs]
-  (let [top (book/top sb)
-        can-trade? (if (sell? o)
-                     (<= (:threshold o) (:threshold top))
-                     (>= (:threshold o) (:threshold top)))
-        min-quantity (min (:quantity o) (:quantity top))
-        remaining-quantity (- (:quantity o) min-quantity)]
-    (if can-trade?
-      ;; if: Trade happens
-      (do
-        (book/decrement sb min-quantity)
-        (doseq [cb cbs]
-          (if (sell? o)
-            (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
-            (cb :trade (trade (:account o) (:account top) (:threshold o) min-quantity))))
-        (when (pos? remaining-quantity)
-          ;; Not tail-rec optimized
-          (match (assoc-in o [:quantity] remaining-quantity) sb cbs)))
-      ;; else: No trade happens
-      o)))
+  (loop [o o]
+    (let [top (book/top sb)
+          can-trade? (cond
+                      (nil? top) false
+                      (sell? o) (<= (:threshold o) (:threshold top))
+                      (buy? o) (>= (:threshold o) (:threshold top)))]
+      (if can-trade?
+        (let [min-quantity (min (:quantity o) (:quantity top))
+              remaining-quantity (- (:quantity o) min-quantity)]
+          ;; if: Trade happens
+          (do
+            (book/decrement sb min-quantity)
+            (doseq [cb cbs]
+              (if (sell? o)
+                (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
+                (cb :trade (trade (:account o) (:account top) (:threshold o) min-quantity))))
+            (when (pos? remaining-quantity)
+              (recur (assoc-in o [:quantity] remaining-quantity)))))
+        ;; else: No trade happens
+        o))))
 
 (defprotocol IMatchingEngine
   (accept [_ o] "Accept an order to the engine")
@@ -59,6 +60,6 @@
               ;; Add what's ever left over to the type's book
               (when-not (nil? pending)
                 (book/accept type-book pending))))))
-      
+
       (subscribe [_ cb]
         (swap! callbacks conj cb)))))
