@@ -20,9 +20,9 @@
 
 (defn- match
   "Attempt to match an order against book"
-  [o sb cbs]
+  [o b cbs]
   (loop [o o]
-    (let [top (book/top sb)
+    (let [top (book/top b)
           can-trade? (cond
                       (nil? top) false
                       (sell? o) (<= (:threshold o) (:threshold top))
@@ -32,7 +32,7 @@
               remaining-quantity (- (:quantity o) min-quantity)]
           ;; if: Trade happens
           (do
-            (book/decrement sb min-quantity)
+            (book/decrement b min-quantity)
             (doseq [cb cbs]
               (if (sell? o)
                 (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
