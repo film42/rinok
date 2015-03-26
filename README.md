@@ -1,6 +1,8 @@
 Rinok
 =====
 
+[![Build Status](https://travis-ci.org/film42/rinok.svg)](https://travis-ci.org/film42/rinok)
+
 A very simple matching engine written in Clojure
 
 #### Usage
