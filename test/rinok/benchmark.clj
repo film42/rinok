@@ -13,7 +13,8 @@
 (defn -main []
   (println "Starting engine...")
   (let [engine (eng/->MatchingEngine)
-        state (atom [])]
+        state (atom [])
+        order-count (atom 0)]
 
     ;; Register event callback
     (eng/subscribe engine
@@ -24,10 +25,16 @@
       (future
         (while true
           (do
-            (eng/accept engine (random-order))))))
+            (eng/accept engine (random-order))
+            (swap! order-count inc)))))
 
     ;; Print throughput every second
     (set-interval 1000
      #(do
         (println "Trades per second:" (count @state))
-        (reset! state [])))))
+        (reset! state [])
+
+        (println "Orders per second:" @order-count)
+        (reset! order-count 0)
+
+        (println "-------------------------")))))
