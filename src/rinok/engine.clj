@@ -52,12 +52,13 @@
         callbacks (atom [])]
     (reify IMatchingEngine
       (accept [_ o]
-        (let [opposite-book (if (sell? o) buy-book sell-book)
-              type-book (if (sell? o) sell-book buy-book)
-              pending (match o opposite-book @callbacks)]
-          (when-not (nil? pending)
-            ;; Add what's ever left over to the type's book
-            (book/accept type-book pending))))
+        (locking :always
+          (let [opposite-book (if (sell? o) buy-book sell-book)
+                type-book (if (sell? o) sell-book buy-book)
+                pending (match o opposite-book @callbacks)]
+            (when-not (nil? pending)
+              ;; Add what's ever left over to the type's book
+              (book/accept type-book pending)))))
 
       (subscribe [_ cb]
         (swap! callbacks conj cb)))))

@@ -24,6 +24,38 @@
                      {:buyer 'A, :seller 'D, :price 10.5, :quantity 100}
                      {:buyer 'E, :seller 'D, :price 10.7, :quantity 100}]))))
 
+  (testing "can match concurrently"
+    (let [engine1 (eng/->MatchingEngine)
+          engine2 (eng/->MatchingEngine)
+          state1 (atom [])
+          state2 (atom [])]
+      ;; Register event callback
+      (eng/subscribe engine1
+                     (fn [t m] (swap! state1 conj m)))
+      (eng/subscribe engine2
+                     (fn [t m] (swap! state2 conj m)))
+
+      ;; Run tests
+      (let [orders [(eng/limit-order 'A 10.5 200 :buy)
+                    (eng/limit-order 'B 10.6 100 :buy)
+                    (eng/limit-order 'C 10.4 200 :sell)
+                    (eng/limit-order 'D 10.3 100 :sell)
+                    (eng/limit-order 'D 10.3 100 :sell)
+                    (eng/limit-order 'E 10.7 200 :buy)]
+            random-orders (atom [])]
+
+        (doall
+         (pmap #(do
+                  (eng/accept engine1 %)
+                  ;; Record order in the order they were called by pmap
+                  (swap! random-orders conj %)) orders))
+
+        (doall (map #(eng/accept engine2 %) @random-orders)))
+
+      ;; Check results
+      (is (= @state1 @state2))))
+
+
   (testing "can match two sell orders to two buy orders"
     (let [engine (eng/->MatchingEngine)
           state (atom [])]
