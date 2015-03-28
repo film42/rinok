@@ -60,7 +60,7 @@
   (subscribe [_ cb]
     (swap! callbacks conj cb)))
 
-;; HACK: Override `new' method to use defaul parameters
+;; HACK: Override `new' method to use default parameters
 (defn ->MatchingEngine []
   (let [buy-book (book/->OrderBook (atom book/buy-map))
         sell-book (book/->OrderBook (atom book/sell-map))
