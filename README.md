@@ -37,3 +37,13 @@ Which would generate the following events:
 #### Testing
 
 To run the unit tests, clone the project and run: `lein test`
+
+
+#### Benchmark
+
+To run benchmarks, run the following:
+
+
+```
+lein run -m rinok.benchmark
+```
