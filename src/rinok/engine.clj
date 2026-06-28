@@ -36,7 +36,7 @@
             (doseq [cb cbs]
               (if (sell? o)
                 (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
-                (cb :trade (trade (:account o) (:account top) (:threshold o) min-quantity))))
+                (cb :trade (trade (:account o) (:account top) (:threshold top) min-quantity))))
             (when (pos? remaining-quantity)
               (recur (assoc-in o [:quantity] remaining-quantity)))))
         ;; else: No trade happens

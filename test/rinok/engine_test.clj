@@ -22,7 +22,7 @@
       (is (= @state [{:buyer 'B, :seller 'C, :price 10.6, :quantity 100}
                      {:buyer 'A, :seller 'C, :price 10.5, :quantity 100}
                      {:buyer 'A, :seller 'D, :price 10.5, :quantity 100}
-                     {:buyer 'E, :seller 'D, :price 10.7, :quantity 100}]))))
+                     {:buyer 'E, :seller 'D, :price 10.3, :quantity 100}]))))
 
   (testing "can match concurrently"
     (let [engine1 (eng/->MatchingEngine)
@@ -70,8 +70,24 @@
       (eng/accept engine (eng/limit-order 'A 10.5 200 :buy))
 
       ;; Check results
-      (is (= @state [{:buyer 'B, :seller 'D, :price 10.6, :quantity 100}
-                     {:buyer 'A, :seller 'C, :price 10.5, :quantity 200}]))))
+      (is (= @state [{:buyer 'B, :seller 'D, :price 10.3, :quantity 100}
+                     {:buyer 'A, :seller 'C, :price 10.4, :quantity 200}]))))
+
+  (testing "buy aggressor prices fill at resting sell's price (maker price)"
+    (let [engine (eng/->MatchingEngine)
+          trades (atom [])]
+      (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
+      (eng/accept engine (eng/limit-order 'M 10.3 100 :sell))   ; resting maker @ 10.3
+      (eng/accept engine (eng/limit-order 'A 10.7 100 :buy))    ; aggressor   @ 10.7
+      (is (= @trades [{:buyer 'A, :seller 'M, :price 10.3, :quantity 100}]))))
+
+  (testing "sell aggressor prices fill at resting buy's price (maker price)"
+    (let [engine (eng/->MatchingEngine)
+          trades (atom [])]
+      (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
+      (eng/accept engine (eng/limit-order 'M 10.7 100 :buy))    ; resting maker @ 10.7
+      (eng/accept engine (eng/limit-order 'A 10.3 100 :sell))   ; aggressor   @ 10.3
+      (is (= @trades [{:buyer 'M, :seller 'A, :price 10.7, :quantity 100}]))))
 
   (testing "can match a bunch of really large orders"
     (let [engine (eng/->MatchingEngine)
