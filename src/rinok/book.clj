@@ -2,8 +2,6 @@
 
 (def sell-map (sorted-map-by <))
 (def buy-map (sorted-map-by >))
-(defn- sell? [t] (= :sell t))
-
 (defprotocol IOrderBook
   "An Order Book for accepting Orders"
   (accept [_ o] "Accept an order")

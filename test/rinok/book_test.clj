@@ -12,7 +12,7 @@
 
   (testing "will get order when a book is on top"
     (let [book (order-book)
-          order {:quantity 100 :theshold 10.1}]
+          order {:quantity 100 :threshold 10.1}]
       (accept book order)
       (is (= order (top book))))))
 

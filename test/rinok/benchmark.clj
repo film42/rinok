@@ -12,13 +12,13 @@
 
 (defn -main []
   (println "Starting engine...")
-  (let [engine (eng/->MatchingEngine)
+  (let [engine (eng/new-engine)
         state (atom [])
         order-count (atom 0)]
 
     ;; Register event callback
     (eng/subscribe engine
-                   (fn [t m] (swap! state conj m)))
+                   (fn [_t m] (swap! state conj m)))
 
     ;; Add tons of orders to the engine using 10 threads
     (dotimes [_ 10]
