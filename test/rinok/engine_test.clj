@@ -4,11 +4,11 @@
 
 (deftest matching-sells-to-buys
   (testing "can match three sell orders to three buy orders"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           state (atom [])]
       ;; Register event callback
       (eng/subscribe engine
-                     (fn [t m] (swap! state conj m)))
+                     (fn [_t m] (swap! state conj m)))
 
       ;; Run tests
       (eng/accept engine (eng/limit-order 'A 10.5 200 :buy))
@@ -25,15 +25,15 @@
                      {:buyer 'E, :seller 'D, :price 10.3, :quantity 100}]))))
 
   (testing "can match concurrently"
-    (let [engine1 (eng/->MatchingEngine)
-          engine2 (eng/->MatchingEngine)
+    (let [engine1 (eng/new-engine)
+          engine2 (eng/new-engine)
           state1 (atom [])
           state2 (atom [])]
       ;; Register event callback
       (eng/subscribe engine1
-                     (fn [t m] (swap! state1 conj m)))
+                     (fn [_t m] (swap! state1 conj m)))
       (eng/subscribe engine2
-                     (fn [t m] (swap! state2 conj m)))
+                     (fn [_t m] (swap! state2 conj m)))
 
       ;; Run tests
       (let [orders [(eng/limit-order 'A 10.5 200 :buy)
@@ -57,11 +57,11 @@
 
 
   (testing "can match two sell orders to two buy orders"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           state (atom [])]
       ;; Register event callback
       (eng/subscribe engine
-                     (fn [t m] (swap! state conj m)))
+                     (fn [_t m] (swap! state conj m)))
 
       ;; Run tests
       (eng/accept engine (eng/limit-order 'C 10.4 200 :sell))
@@ -74,7 +74,7 @@
                      {:buyer 'A, :seller 'C, :price 10.4, :quantity 200}]))))
 
   (testing "buy aggressor prices fill at resting sell's price (maker price)"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           trades (atom [])]
       (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
       (eng/accept engine (eng/limit-order 'M 10.3 100 :sell))   ; resting maker @ 10.3
@@ -82,7 +82,7 @@
       (is (= @trades [{:buyer 'A, :seller 'M, :price 10.3, :quantity 100}]))))
 
   (testing "sell aggressor prices fill at resting buy's price (maker price)"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           trades (atom [])]
       (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
       (eng/accept engine (eng/limit-order 'M 10.7 100 :buy))    ; resting maker @ 10.7
@@ -90,7 +90,7 @@
       (is (= @trades [{:buyer 'M, :seller 'A, :price 10.7, :quantity 100}]))))
 
   (testing "non-crossing order rests on the book without generating a trade"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           trades (atom [])]
       (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
       (eng/accept engine (eng/limit-order 'A 10.5 100 :buy))
@@ -98,7 +98,7 @@
       (is (= @trades []))))
 
   (testing "aggressive order sweeps multiple price levels"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           trades (atom [])]
       (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
       (eng/accept engine (eng/limit-order 'A 10.1 100 :sell))
@@ -110,7 +110,7 @@
                        {:buyer 'D, :seller 'C, :price 10.3, :quantity 50}]))))
 
   (testing "partial fill leaves remainder on the book"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           trades (atom [])]
       (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
       (eng/accept engine (eng/limit-order 'A 10.5 200 :sell))
@@ -120,11 +120,11 @@
                        {:buyer 'C, :seller 'A, :price 10.5, :quantity 50}]))))
 
   (testing "can match a bunch of really large orders"
-    (let [engine (eng/->MatchingEngine)
+    (let [engine (eng/new-engine)
           state (atom [])]
       ;; Register event callback
       (eng/subscribe engine
-                     (fn [t m] (swap! state conj m)))
+                     (fn [_t m] (swap! state conj m)))
 
       ;; Run tests
       (doseq [_ (range 1000)]

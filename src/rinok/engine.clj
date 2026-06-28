@@ -30,15 +30,13 @@
       (if can-trade?
         (let [min-quantity (min (:quantity o) (:quantity top))
               remaining-quantity (- (:quantity o) min-quantity)]
-          ;; if: Trade happens
-          (do
-            (book/decrement b min-quantity)
-            (doseq [cb cbs]
-              (if (sell? o)
-                (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
-                (cb :trade (trade (:account o) (:account top) (:threshold top) min-quantity))))
-            (when (pos? remaining-quantity)
-              (recur (assoc-in o [:quantity] remaining-quantity)))))
+          (book/decrement b min-quantity)
+          (doseq [cb cbs]
+            (if (sell? o)
+              (cb :trade (trade (:account top) (:account o) (:threshold top) min-quantity))
+              (cb :trade (trade (:account o) (:account top) (:threshold top) min-quantity))))
+          (when (pos? remaining-quantity)
+            (recur (assoc-in o [:quantity] remaining-quantity))))
         ;; else: No trade happens
         o))))
 
@@ -46,10 +44,10 @@
   (accept [_ o] "Accept an order to the engine")
   (subscribe [_ cb] "Register a callback for events"))
 
-(defrecord MatchingEngine [buy-book sell-book callbacks]
+(defrecord MatchingEngine [buy-book sell-book callbacks lock]
   IMatchingEngine
   (accept [_ o]
-    (locking :always
+    (locking lock
       (let [opposite-book (if (sell? o) buy-book sell-book)
             type-book (if (sell? o) sell-book buy-book)
             pending (match o opposite-book @callbacks)]
@@ -60,9 +58,8 @@
   (subscribe [_ cb]
     (swap! callbacks conj cb)))
 
-;; HACK: Override `new' method to use default parameters
-(defn ->MatchingEngine []
+(defn new-engine []
   (let [buy-book (book/->OrderBook (atom book/buy-map))
         sell-book (book/->OrderBook (atom book/sell-map))
         callbacks (atom [])]
-    (MatchingEngine. buy-book sell-book callbacks)))
+    (MatchingEngine. buy-book sell-book callbacks (Object.))))

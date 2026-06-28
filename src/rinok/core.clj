@@ -3,7 +3,7 @@
 
 (defn -main []
   (println "Starting engine...")
-  (let [engine (eng/->MatchingEngine)]
+  (let [engine (eng/new-engine)]
     ;; Register event callback
     (eng/subscribe engine println)
 
