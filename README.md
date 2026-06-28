@@ -1,7 +1,7 @@
 Rinok
 =====
 
-[![Build Status](https://travis-ci.org/film42/rinok.svg)](https://travis-ci.org/film42/rinok)
+[![CI](https://github.com/film42/rinok/actions/workflows/ci.yml/badge.svg)](https://github.com/film42/rinok/actions/workflows/ci.yml)
 
 A very simple matching engine written in Clojure
 
@@ -16,7 +16,7 @@ Here's a very simple example:
   (:require [rinok.engine :as eng]))
 
 (defn -main []
-  (let [engine (eng/->MatchingEngine)]
+  (let [engine (eng/new-engine)]
     ;; Register event callback
     (eng/subscribe engine println)
 
