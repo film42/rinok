@@ -89,6 +89,36 @@
       (eng/accept engine (eng/limit-order 'A 10.3 100 :sell))   ; aggressor   @ 10.3
       (is (= @trades [{:buyer 'M, :seller 'A, :price 10.7, :quantity 100}]))))
 
+  (testing "non-crossing order rests on the book without generating a trade"
+    (let [engine (eng/->MatchingEngine)
+          trades (atom [])]
+      (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
+      (eng/accept engine (eng/limit-order 'A 10.5 100 :buy))
+      (eng/accept engine (eng/limit-order 'B 10.6 100 :sell))  ; sell at 10.6 doesn't cross buy at 10.5
+      (is (= @trades []))))
+
+  (testing "aggressive order sweeps multiple price levels"
+    (let [engine (eng/->MatchingEngine)
+          trades (atom [])]
+      (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
+      (eng/accept engine (eng/limit-order 'A 10.1 100 :sell))
+      (eng/accept engine (eng/limit-order 'B 10.2 100 :sell))
+      (eng/accept engine (eng/limit-order 'C 10.3 100 :sell))
+      (eng/accept engine (eng/limit-order 'D 10.5 250 :buy))   ; sweeps A and B fully, C partially
+      (is (= @trades [{:buyer 'D, :seller 'A, :price 10.1, :quantity 100}
+                       {:buyer 'D, :seller 'B, :price 10.2, :quantity 100}
+                       {:buyer 'D, :seller 'C, :price 10.3, :quantity 50}]))))
+
+  (testing "partial fill leaves remainder on the book"
+    (let [engine (eng/->MatchingEngine)
+          trades (atom [])]
+      (eng/subscribe engine (fn [_ t] (swap! trades conj t)))
+      (eng/accept engine (eng/limit-order 'A 10.5 200 :sell))
+      (eng/accept engine (eng/limit-order 'B 10.5 50 :buy))    ; only fills 50 of 200
+      (eng/accept engine (eng/limit-order 'C 10.5 50 :buy))    ; fills next 50 from the remaining 150
+      (is (= @trades [{:buyer 'B, :seller 'A, :price 10.5, :quantity 50}
+                       {:buyer 'C, :seller 'A, :price 10.5, :quantity 50}]))))
+
   (testing "can match a bunch of really large orders"
     (let [engine (eng/->MatchingEngine)
           state (atom [])]
