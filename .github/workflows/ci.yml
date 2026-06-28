@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: DeLaGuardo/setup-clj-kondo@master
+      - uses: DeLaGuardo/setup-clojure@13.4
         with:
-          version: "2026.05.25"
+          clj-kondo: latest
 
       - name: Lint
         run: clj-kondo --lint src test
@@ -29,7 +29,7 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - uses: DeLaGuardo/setup-lein@master
+      - uses: DeLaGuardo/setup-clojure@13.4
         with:
           lein: "2.12.0"
 
